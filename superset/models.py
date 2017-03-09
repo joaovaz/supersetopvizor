@@ -1284,7 +1284,8 @@ class SqlaTable(Model, Datasource, AuditMixinNullable, ImportMixin):
             inner_to_dttm=None,
             orderby=None,
             extras=None,
-            columns=None):
+            columns=None,
+            single_column=None):
         """Querying any sqla table from this common interface"""
         template_processor = get_template_processor(
             table=self, database=self.database)
@@ -1333,6 +1334,9 @@ class SqlaTable(Model, Datasource, AuditMixinNullable, ImportMixin):
         elif columns:
             for s in columns:
                 select_exprs.append(cols[s].sqla_col)
+            metrics_exprs = []
+        elif single_column:
+            select_exprs.append(cols[single_column].sqla_col)
             metrics_exprs = []
 
         if granularity:

@@ -269,6 +269,19 @@ const visTypes = {
     ],
   },
 
+    markup_opvizor: {
+        label: 'Markup by Opvizor',
+        controlPanelSections: [
+            {
+                label: null,
+                fieldSetRows: [
+                    ['markup_type'],
+                    ['single_column'],
+                ],
+            },
+        ],
+    },
+
   pivot_table: {
     label: 'Pivot Table',
     controlPanelSections: [
@@ -336,6 +349,26 @@ const visTypes = {
       },
     ],
   },
+
+    treemap_Opvizor: {
+        label: 'treemap_Opvizor',
+        controlPanelSections: [
+            {
+                label: null,
+                fieldSetRows: [
+                    ['metrics'],
+                    ['groupby'],
+                ],
+            },
+            {
+                label: 'Chart Options',
+                fieldSetRows: [
+                    ['treemap_Opvizor_ratio'],
+                    ['number_format'],
+                ],
+            },
+        ],
+    },
 
   cal_heatmap: {
     label: 'Calendar Heatmap',
@@ -481,6 +514,36 @@ const visTypes = {
 
   sunburst: {
     label: 'Sunburst',
+    controlPanelSections: [
+      {
+        label: null,
+        fieldSetRows: [
+          ['groupby'],
+          ['metric', 'secondary_metric'],
+          ['row_limit'],
+        ],
+      },
+    ],
+    fieldOverrides: {
+      metric: {
+        label: 'Primary Metric',
+        description: 'The primary metric is used to define the arc segment sizes',
+      },
+      secondary_metric: {
+        label: 'Secondary Metric',
+        description: 'This secondary metric is used to ' +
+                     'define the color as a ratio against the primary metric. ' +
+                     'If the two metrics match, color is mapped level groups',
+      },
+      groupby: {
+        label: 'Hierarchy',
+        description: 'This defines the level of the hierarchy',
+      },
+    },
+  },
+
+    sunburst_opvizor: {
+    label: 'Sunburst by Opvizor',
     controlPanelSections: [
       {
         label: null,

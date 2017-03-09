@@ -48,6 +48,35 @@ const spectrums = {
   ],
 };
 
+const greenspectrum = [
+    // '#55d12e',
+    '#32CD32'
+   /* '#3F9526',
+    '#7B9530',
+    '#5A7129',
+    '#5F9129',
+    '#59A12e',
+    '#45b123'*/
+];
+
+const yellowspectrum = [
+    /*'#ffd266',
+    '#f3c266',
+    '#ffdfa6',*/
+    '#FFFF33'
+    /*'#eed2b6',
+    '#ffd999'*/
+];
+
+const orangespectrum = [
+    // '#ffb400',
+    '#FFA500'
+    /*'#fac400',
+    '#efa910',
+    '#ff8400',
+    '#fe8840',*/
+];
+
 export const category21 = (function () {
   // Color factory
   const seen = {};
@@ -64,6 +93,57 @@ export const category21 = (function () {
     /* eslint consistent-return: 0 */
     return bnbColors[seen[stringifyS] % bnbColors.length];
   };
+}());
+
+export const okspectrumcolors = (function () {
+    // Color factory
+    const seen = {};
+    return function (s) {
+        if (!s) {
+            return;
+        }
+        let stringifyS = String(s);
+        // next line is for superset series that should have the same color
+        stringifyS = stringifyS.replace('---', '');
+        if (seen[stringifyS] === undefined) {
+            seen[stringifyS] = Object.keys(seen).length;
+        }
+        return greenspectrum[seen[stringifyS] % greenspectrum.length];
+    };
+}());
+
+export const warningspectrumcolors = (function () {
+    // Color factory
+    const seen = {};
+    return function (s) {
+        if (!s) {
+            return;
+        }
+        let stringifyS = String(s);
+        // next line is for superset series that should have the same color
+        stringifyS = stringifyS.replace('---', '');
+        if (seen[stringifyS] === undefined) {
+            seen[stringifyS] = Object.keys(seen).length;
+        }
+        return yellowspectrum[seen[stringifyS] % yellowspectrum.length];
+    };
+}());
+
+export const errorspectrumcolors = (function () {
+    // Color factory
+    const seen = {};
+    return function (s) {
+        if (!s) {
+            return;
+        }
+        let stringifyS = String(s);
+        // next line is for superset series that should have the same color
+        stringifyS = stringifyS.replace('---', '');
+        if (seen[stringifyS] === undefined) {
+            seen[stringifyS] = Object.keys(seen).length;
+        }
+        return orangespectrum[seen[stringifyS] % orangespectrum.length];
+    };
 }());
 
 export const colorScalerFactory = function (colors, data, accessor) {

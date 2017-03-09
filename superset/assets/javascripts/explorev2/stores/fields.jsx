@@ -13,6 +13,7 @@ const D3_TIME_FORMAT_OPTIONS = [
   ['.3f', '.3f | 12345.432'],
   ['+,', '+, | +12,345.4321'],
   ['$,.2f', '$,.2f | $12,345.43'],
+  ['', 'no format'],
 ];
 
 const ROW_LIMIT_OPTIONS = [10, 50, 100, 250, 500, 1000, 5000, 10000, 50000];
@@ -292,6 +293,16 @@ export const fields = {
     default: [],
     description: 'One or many fields to pivot as columns',
   },
+    single_column: {
+    type: 'SelectField',
+    multi: false,
+    label: 'Column',
+    mapStateToProps: (state) => ({
+      choices: (state.datasource) ? state.datasource.gb_cols : [],
+    }),
+    default: [],
+    description: 'One field to pivot as column',
+  },
 
   all_columns: {
     type: 'SelectField',
@@ -535,6 +546,14 @@ export const fields = {
     default: 0.5 * (1 + Math.sqrt(5)),  // d3 default, golden ratio
     description: 'Target aspect ratio for treemap tiles.',
   },
+
+    treemap_Opvizor_ratio: {
+        type: 'TextField',
+        label: 'Ratio',
+        isFloat: true,
+        default: 1,  // d3 default, golden ratio
+        description: 'Target aspect ratio for treemap opvizor tiles.',
+    },
 
   number_format: {
     type: 'SelectField',

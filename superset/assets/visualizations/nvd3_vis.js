@@ -1,6 +1,9 @@
 // JS
 import $ from 'jquery';
 import { category21 } from '../javascripts/modules/colors';
+import { okspectrumcolors } from '../javascripts/modules/colors';
+import { warningspectrumcolors } from '../javascripts/modules/colors';
+import { errorspectrumcolors } from '../javascripts/modules/colors';
 import { timeFormatFactory, formatDate } from '../javascripts/modules/dates';
 import { customizeToolTip } from '../javascripts/modules/utils';
 import throttle from 'lodash.throttle';
@@ -339,7 +342,21 @@ function nvd3Vis(slice, payload) {
       }
     }
     if (vizType !== 'bullet') {
-      chart.color((d) => category21(d[colorKey]));
+      //check if pie is the warning,error,ok type
+      if(vizType == 'pie' && payload.data.length == 3){
+        var legendsacceptable = ["error", "warning", "ok"];
+        var legends = payload.data;
+       var xisArray = legends.map(function (a){ return a.x;});
+       if(xisArray.every(elem => legendsacceptable.indexOf(elem) > -1 && xisArray.length == 3)){
+         chart.color(function (d) {
+             if(d[colorKey]=="ok"){return okspectrumcolors("ok");}
+             else if(d[colorKey]=="warning"){return warningspectrumcolors("warning");}
+             else if(d[colorKey]=="error"){return errorspectrumcolors("error");}
+         });
+       }
+      }
+      else
+        chart.color((d) => category21(d[colorKey]));
     }
 
     if (fd.x_axis_label && fd.x_axis_label !== '' && chart.xAxis) {

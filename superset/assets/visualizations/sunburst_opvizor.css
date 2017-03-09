@@ -1,0 +1,49 @@
+.sunburst_opvizor text {
+  text-rendering: optimizeLegibility;
+}
+.sunburst_opvizor path {
+  stroke: #333;
+  stroke-width: 0.5px;
+}
+.sunburst_opvizor .center-label {
+  text-anchor: middle;
+  fill: #000;
+  pointer-events: none;
+}
+.sunburst_opvizor .path-abs-percent {
+  font-size: 3.5em;
+  font-weight: 400;
+}
+.sunburst_opvizor .path-cond-percent {
+  font-size: 2em;
+}
+.sunburst_opvizor .path-metrics {
+  font-size: 1.5em;
+}
+.sunburst_opvizor .path-ratio {
+  font-size: 1.2em;
+}
+
+.sunburst_opvizor .breadcrumbs text {
+  font-weight: 600;
+  font-size: 1.2em;
+  text-anchor: middle;
+  fill: #000;
+}
+
+/* dashboard specific */
+.dashboard .sunburst_opvizor text {
+  font-size: 1em;
+}
+.dashboard .sunburst_opvizor .path-abs-percent {
+  font-size: 2.5em;
+}
+.dashboard .sunburst_opvizor .path-cond-percent {
+  font-size: 1.75em;
+}
+.dashboard .sunburst_opvizor .path-metrics {
+  font-size: 1em;
+}
+.dashboard .sunburst_opvizor .path-ratio {
+  font-size: 1em;
+}

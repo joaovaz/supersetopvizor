@@ -60,6 +60,11 @@
           "/static/assets/images/viz_thumbnails/markup.png"
         ],
         [
+          "markup_opvizor",
+          "Markup by Opvizor",
+          "/static/assets/images/viz_thumbnails/markup_opvizor.png"
+        ],
+        [
           "pivot_table",
           "Pivot Table",
           "/static/assets/images/viz_thumbnails/pivot_table.png"
@@ -78,6 +83,11 @@
           "treemap",
           "Treemap",
           "/static/assets/images/viz_thumbnails/treemap.png"
+        ],
+        [
+          "treemap_Opvizor",
+          "Treemap by Opvizor",
+          "/static/assets/images/viz_thumbnails/treemap_Opvizor.png"
         ],
         [
           "cal_heatmap",
@@ -118,6 +128,11 @@
           "sunburst",
           "Sunburst",
           "/static/assets/images/viz_thumbnails/sunburst.png"
+        ],
+        [
+          "sunburst_opvizor",
+          "Sunburst by Opvizor",
+          "/static/assets/images/viz_thumbnails/sunburst_opvizor.png"
         ],
         [
           "sankey",
@@ -804,6 +819,13 @@
       "default": [],
       "description": "One or many fields to pivot as columns"
     },
+     "single_column": {
+      "type": "SelectField",
+      "multi": false,
+      "label": "Column",
+      "default": [],
+      "description": "One field to pivot as column"
+    },
     "all_columns": {
       "type": "SelectField",
       "multi": true,
@@ -1318,6 +1340,13 @@
       "default": 1.618033988749895,
       "description": "Target aspect ratio for treemap tiles."
     },
+    "treemap_Opvizor_ratio": {
+      "type": "TextField",
+      "label": "Ratio",
+      "isFloat": true,
+      "default": 1.618033988749895,
+      "description": "Target aspect ratio for treemap opvizor tiles."
+    },
     "number_format": {
       "type": "SelectField",
       "freeForm": true,
@@ -1758,6 +1787,22 @@
       "description": "D3 format syntax: https://github.com/d3/d3-format"
     },
     "markup_type": {
+      "type": "SelectField",
+      "label": "Markup Type",
+      "choices": [
+        [
+          "markdown",
+          "markdown"
+        ],
+        [
+          "html",
+          "html"
+        ]
+      ],
+      "default": "markdown",
+      "description": "Pick your favorite markup language"
+    },
+    "markup_type_opvizor": {
       "type": "SelectField",
       "label": "Markup Type",
       "choices": [

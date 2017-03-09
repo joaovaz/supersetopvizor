@@ -200,6 +200,7 @@ class BaseViz(object):
             'timeseries_limit': limit,
             'extras': extras,
             'timeseries_limit_metric': timeseries_limit_metric,
+            'single_column': form_data.get('single_column'),
         }
         return d
 
@@ -458,6 +459,21 @@ class MarkupViz(BaseViz):
             code = markdown(code)
         return dict(html=code)
 
+class MarkupVizOpvizor(BaseViz):
+
+    """Use html or markdown to create a free form widget"""
+
+    viz_type = "markup_opvizor"
+    verbose_name = _("Markup by Opvizor")
+    is_timeseries = False
+
+    # def get_df(self):
+    #     return True
+
+    def get_data(self, df):
+        description = df.values[0][0]
+        return dict(html=description)
+
 
 class SeparatorViz(MarkupViz):
 
@@ -519,6 +535,33 @@ class TreemapViz(BaseViz):
                       for metric in df.columns]
         return chart_data
 
+
+class TreemapOpvizorViz(BaseViz):
+
+    """Tree map visualisation for issues hierarchical data by Opvizor."""
+
+    viz_type = "treemap_Opvizor"
+    verbose_name = _("Treemap by Opvizor")
+    credits = '<a href="https://d3js.org">d3.js</a>'
+    is_timeseries = False
+
+    def _nest(self, metric, df):
+        nlevels = df.index.nlevels
+        if nlevels == 1:
+            result = [{"name": n, "value": v}
+                      for n, v in zip(df.index, df[metric])]
+        else:
+            result = [{"name": l, "children": self._nest(metric, df.loc[l])}
+                      for l in df.index.levels[0]]
+        return result
+
+    def get_data(self, df):
+
+        df = df.set_index(self.form_data.get("groupby"))
+        chart_data = [{"name": "Overall Analyses Made", "children": self._nest(metric, df)}
+                      for metric in df.columns]
+
+        return chart_data
 
 class CalHeatmapViz(BaseViz):
 
@@ -1180,6 +1223,38 @@ class SunburstViz(BaseViz):
             self.form_data['metric'], self.form_data['secondary_metric']]
         return qry
 
+class SunburstOpvizorViz(BaseViz):
+
+    """A multi level sunburst chart"""
+
+    viz_type = "sunburst_opvizor"
+    verbose_name = _("Sunburst by Opvizor")
+    is_timeseries = False
+    credits = (
+        'Kerry Rodden '
+        '@<a href="https://bl.ocks.org/kerryrodden/7090426">bl.ocks.org</a>')
+
+    def get_data(self, df):
+
+        # if m1 == m2 duplicate the metric column
+        cols = self.form_data.get('groupby')
+        metric = self.form_data.get('metric')
+        secondary_metric = self.form_data.get('secondary_metric')
+        if metric == secondary_metric:
+            ndf = df
+            ndf.columns = [cols + ['m1', 'm2']]
+        else:
+            cols += [
+                self.form_data['metric'], self.form_data['secondary_metric']]
+            ndf = df[cols]
+        return json.loads(ndf.to_json(orient="values"))  # TODO fix this nonsense
+
+    def query_obj(self):
+        qry = super(SunburstOpvizorViz, self).query_obj()
+        qry['metrics'] = [
+            self.form_data['metric'], self.form_data['secondary_metric']]
+        return qry
+
 
 class SankeyViz(BaseViz):
 
@@ -1554,10 +1629,12 @@ viz_types_list = [
     BubbleViz,
     BulletViz,
     MarkupViz,
+    MarkupVizOpvizor,
     WordCloudViz,
     BigNumberViz,
     BigNumberTotalViz,
     SunburstViz,
+    SunburstOpvizorViz,
     DirectedForceViz,
     SankeyViz,
     WorldMapViz,
@@ -1567,6 +1644,7 @@ viz_types_list = [
     HeatmapViz,
     BoxPlotViz,
     TreemapViz,
+    TreemapOpvizorViz,
     CalHeatmapViz,
     HorizonViz,
     MapboxViz,
