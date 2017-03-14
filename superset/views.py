@@ -38,6 +38,7 @@ from superset import (
     appbuilder, cache, db, models, viz, utils, app,
     sm, sql_lab, sql_parse, results_backend, security,
 )
+from superset.legacy import cast_form_data
 from superset.utils import has_access
 from superset.source_registry import SourceRegistry
 from superset.models import DatasourceAccessRequest as DAR
@@ -1464,12 +1465,21 @@ class Superset(BaseSupersetView):
         return redirect('/accessrequestsmodelview/list/')
 
     def get_form_data(self):
-        form_data = request.args.get("form_data")
-        if not form_data:
+        # get form data from url
+        if request.args.get("form_data"):
+            form_data = request.args.get("form_data")
+        elif request.form.get("form_data"):
+            # Supporting POST as well as get
             form_data = request.form.get("form_data")
-        if not form_data:
+        else:
             form_data = '{}'
+
         d = json.loads(form_data)
+
+        if request.args.get("viz_type"):
+            # Converting old URLs
+            d = cast_form_data(request.args)
+
         extra_filters = request.args.get("extra_filters")
         filters = d.get('filters', [])
         if extra_filters:
@@ -1566,7 +1576,8 @@ class Superset(BaseSupersetView):
 
         payload = {}
         try:
-            payload = viz_obj.get_payload()
+            payload = viz_obj.get_payload(
+                force=request.args.get('force') == 'true')
         except Exception as e:
             logging.exception(e)
             return json_error_response(utils.error_msg_from_exception(e))
@@ -1829,7 +1840,7 @@ class Superset(BaseSupersetView):
 
     @api
     @has_access_api
-    @expose("/schemas/<db_id>")
+    @expose("/schemas/<db_id>/")
     def schemas(self, db_id):
         database = (
             db.session
@@ -1845,7 +1856,7 @@ class Superset(BaseSupersetView):
     @has_access_api
     @expose("/tables/<db_id>/<schema>/<substr>/")
     def tables(self, db_id, schema, substr):
-        """endpoint to power the calendar heatmap on the welcome page"""
+        """Endpoint to fetch the list of tables for given database"""
         schema = utils.js_string_to_python(schema)
         substr = utils.js_string_to_python(substr)
         database = db.session.query(models.Database).filter_by(id=db_id).one()
@@ -2466,20 +2477,9 @@ class Superset(BaseSupersetView):
     def select_star(self, database_id, table_name):
         mydb = db.session.query(
             models.Database).filter_by(id=database_id).first()
-        quote = mydb.get_quoter()
-        t = mydb.get_table(table_name)
-
-        # Prevent exposing column fields to users that cannot access DB.
-        if not self.datasource_access(t.perm):
-            flash(get_datasource_access_error_msg(t.name), 'danger')
-            return redirect("/tablemodelview/list/")
-
-        fields = ", ".join(
-            [quote(c.name) for c in t.columns] or "*")
-        s = "SELECT\n{}\nFROM {}".format(fields, table_name)
         return self.render_template(
             "superset/ajah.html",
-            content=s
+            content=mydb.select_star(table_name, show_cols=True)
         )
 
     @expose("/theme/")

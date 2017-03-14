@@ -2,7 +2,10 @@ const $ = window.$ = require('jquery');
 import React, { PropTypes } from 'react';
 import Select from 'react-select';
 import { Button, Row, Col } from 'react-bootstrap';
-import SelectField from './SelectField';
+import SelectControl from './SelectControl';
+
+const arrayFilterOps = ['in', 'not in'];
+const strFilterOps = ['==', '!=', '>', '<', '>=', '<=', 'regex'];
 
 const propTypes = {
   choices: PropTypes.array,
@@ -24,8 +27,10 @@ const defaultProps = {
 export default class Filter extends React.Component {
   constructor(props) {
     super(props);
+    const filterOps = props.datasource.type === 'table' ?
+      ['in', 'not in'] : ['==', '!=', 'in', 'not in', 'regex'];
     this.opChoices = this.props.having ? ['==', '!=', '>', '<', '>=', '<=']
-      : ['in', 'not in'];
+      : filterOps;
   }
   fetchFilterValues(col) {
     if (!this.props.datasource) {
@@ -45,7 +50,22 @@ export default class Filter extends React.Component {
       });
     }
   }
-  changeFilter(field, event) {
+  switchFilterValue(prevFilter, nextOp) {
+    const prevOp = prevFilter.op;
+    let newVal = null;
+    if (arrayFilterOps.indexOf(prevOp) !== -1
+        && strFilterOps.indexOf(nextOp) !== -1) {
+      // switch from array to string
+      newVal = this.props.filter.val.length > 0 ? this.props.filter.val[0] : '';
+    }
+    if (strFilterOps.indexOf(prevOp) !== -1
+        && arrayFilterOps.indexOf(nextOp) !== -1) {
+      // switch from string to array
+      newVal = this.props.filter.val === '' ? [] : [this.props.filter.val];
+    }
+    return newVal;
+  }
+  changeFilter(control, event) {
     let value = event;
     if (event && event.target) {
       value = event.target.value;
@@ -53,35 +73,45 @@ export default class Filter extends React.Component {
     if (event && event.value) {
       value = event.value;
     }
-    this.props.changeFilter(field, value);
-    if (field === 'col' && value !== null && this.props.datasource.filter_select) {
+    if (control === 'op') {
+      const newVal = this.switchFilterValue(this.props.filter, value);
+      if (newVal) {
+        this.props.changeFilter(['op', 'val'], [value, newVal]);
+      } else {
+        this.props.changeFilter(control, value);
+      }
+    } else {
+      this.props.changeFilter(control, value);
+    }
+    if (control === 'col' && value !== null && this.props.datasource.filter_select) {
       this.fetchFilterValues(value);
     }
   }
   removeFilter(filter) {
     this.props.removeFilter(filter);
   }
-  renderFilterFormField(filter) {
+  renderFilterFormControl(filter) {
     const datasource = this.props.datasource;
     if (datasource && datasource.filter_select) {
       if (!filter.choices) {
         this.fetchFilterValues(filter.col);
       }
     }
-    if (this.props.having) {
-      // druid having filter
+    // switching filter value between array/string when needed
+    if (strFilterOps.indexOf(filter.op) !== -1) {
+      // druid having filter or regex/==/!= filters
       return (
         <input
           type="text"
           onChange={this.changeFilter.bind(this, 'val')}
-          value={filter.value}
+          value={filter.val}
           className="form-control input-sm"
           placeholder="Filter value"
         />
       );
     }
     return (
-      <SelectField
+      <SelectControl
         multi
         freeForm
         name="filter-value"
@@ -117,7 +147,7 @@ export default class Filter extends React.Component {
             />
           </Col>
           <Col md={7}>
-            {this.renderFilterFormField(filter)}
+            {this.renderFilterFormControl(filter)}
           </Col>
           <Col md={2}>
             <Button

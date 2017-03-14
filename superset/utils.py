@@ -30,6 +30,7 @@ from flask_appbuilder.const import (
     FLAMSG_ERR_SEC_ACCESS_DENIED,
     PERMISSION_PREFIX
 )
+from flask_cache import Cache
 from flask_appbuilder._compat import as_unicode
 from flask_babel import gettext as __
 import markdown as md
@@ -125,6 +126,14 @@ class memoized(object):  # noqa
 def js_string_to_python(item):
     return None if item in ('null', 'undefined') else item
 
+def js_string_to_num(item):
+    if item.isdigit():
+        return int(item)
+    s = item
+    try:
+        s = float(item)
+    except ValueError:
+        return s
 
 class DimSelector(Having):
     def __init__(self, **args):
@@ -565,3 +574,9 @@ def has_access(f):
 def choicify(values):
     """Takes an iterable and makes an iterable of tuples with it"""
     return [(v, v) for v in values]
+
+
+def setup_cache(app, cache_config):
+    """Setup the flask-cache on a flask app"""
+    if cache_config and cache_config.get('CACHE_TYPE') != 'null':
+        return Cache(app, config=cache_config)

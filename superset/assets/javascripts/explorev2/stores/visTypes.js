@@ -2,14 +2,14 @@ export const commonControlPanelSections = {
   druidTimeSeries: {
     label: 'Time',
     description: 'Time related form attributes',
-    fieldSetRows: [
+    controlSetRows: [
       ['granularity', 'druid_time_origin'],
       ['since', 'until'],
     ],
   },
   datasourceAndVizType: {
     label: 'Datasource & Chart Type',
-    fieldSetRows: [
+    controlSetRows: [
       ['datasource'],
       ['viz_type'],
       ['slice_id'],
@@ -18,14 +18,14 @@ export const commonControlPanelSections = {
   sqlaTimeSeries: {
     label: 'Time',
     description: 'Time related form attributes',
-    fieldSetRows: [
+    controlSetRows: [
       ['granularity_sqla', 'time_grain_sqla'],
       ['since', 'until'],
     ],
   },
   sqlClause: {
     label: 'SQL',
-    fieldSetRows: [
+    controlSetRows: [
       ['where'],
       ['having'],
     ],
@@ -34,7 +34,7 @@ export const commonControlPanelSections = {
   NVD3TimeSeries: [
     {
       label: null,
-      fieldSetRows: [
+      controlSetRows: [
         ['metrics'],
         ['groupby'],
         ['limit', 'timeseries_limit_metric'],
@@ -45,7 +45,7 @@ export const commonControlPanelSections = {
       description: 'This section contains options ' +
                    'that allow for advanced analytical post processing ' +
                     'of query results',
-      fieldSetRows: [
+      controlSetRows: [
           ['rolling_type', 'rolling_periods'],
           ['time_compare'],
           ['num_period_compare', 'period_ratio_type'],
@@ -58,16 +58,16 @@ export const commonControlPanelSections = {
     {
       label: 'Filters',
       description: 'Filters are defined using comma delimited strings as in <US,FR,Other>' +
-        'Leave the value field empty to filter empty strings or nulls' +
+        'Leave the value control empty to filter empty strings or nulls' +
         'For filters with comma in values, wrap them in single quotes' +
         "as in <NY, 'Tahoe, CA', DC>",
-      fieldSetRows: [['filters']],
+      controlSetRows: [['filters']],
     },
     {
       label: 'Result Filters',
       description: 'The filters to apply after post-aggregation.' +
-        'Leave the value field empty to filter empty strings or nulls',
-      fieldSetRows: [['having_filters']],
+        'Leave the value control empty to filter empty strings or nulls',
+      controlSetRows: [['having_filters']],
     },
   ],
 };
@@ -78,8 +78,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: 'Chart Options',
-        description: 'tooltip text here',
-        fieldSetRows: [
+        controlSetRows: [
           ['metrics'],
           ['groupby'],
           ['columns'],
@@ -93,7 +92,7 @@ const visTypes = {
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       groupby: {
         label: 'Series',
       },
@@ -109,7 +108,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['metrics', 'groupby'],
           ['limit'],
           ['pie_label_type'],
@@ -127,7 +126,7 @@ const visTypes = {
       commonControlPanelSections.NVD3TimeSeries[0],
       {
         label: 'Chart Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['show_brush', 'show_legend'],
           ['rich_tooltip', 'y_axis_zero'],
           ['y_log_scale', 'contribution'],
@@ -147,26 +146,26 @@ const visTypes = {
     controlPanelSections: [
       {
         label: 'Chart Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['x_axis_format'],
         ],
       },
       {
         label: 'Y Axis 1',
-        fieldSetRows: [
+        controlSetRows: [
           ['metric'],
           ['y_axis_format'],
         ],
       },
       {
         label: 'Y Axis 2',
-        fieldSetRows: [
+        controlSetRows: [
           ['metric_2'],
           ['y_axis_2_format'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       metric: {
         label: 'Left Axis Metric',
         description: 'Choose a metric for left axis',
@@ -184,7 +183,7 @@ const visTypes = {
       commonControlPanelSections.NVD3TimeSeries[0],
       {
         label: 'Chart Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['show_brush', 'show_legend', 'show_bar_value'],
           ['rich_tooltip', 'y_axis_zero'],
           ['y_log_scale', 'contribution'],
@@ -215,7 +214,7 @@ const visTypes = {
       commonControlPanelSections.NVD3TimeSeries[0],
       {
         label: 'Chart Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['show_brush', 'show_legend'],
           ['rich_tooltip', 'y_axis_zero'],
           ['y_log_scale', 'contribution'],
@@ -234,26 +233,36 @@ const visTypes = {
       {
         label: 'GROUP BY',
         description: 'Use this section if you want a query that aggregates',
-        fieldSetRows: [
+        controlSetRows: [
           ['groupby', 'metrics'],
+          ['include_time'],
         ],
       },
       {
         label: 'NOT GROUPED BY',
         description: 'Use this section if you want to query atomic rows',
-        fieldSetRows: [
+        controlSetRows: [
           ['all_columns', 'order_by_cols'],
         ],
       },
       {
         label: 'Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['table_timestamp_format'],
           ['row_limit', 'page_length'],
           ['include_search', 'table_filter'],
         ],
       },
     ],
+    controlOverrides: {
+      metrics: {
+        default: null,
+        validators: null,
+      },
+      time_grain_sqla: {
+        default: null,
+      },
+    },
   },
 
   markup: {
@@ -261,7 +270,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['markup_type'],
           ['code'],
         ],
@@ -287,7 +296,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['groupby', 'columns'],
           ['metrics', 'pandas_aggfunc'],
         ],
@@ -300,12 +309,12 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['code'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       code: {
         default: '####Section Title\n' +
                  'A paragraph describing the section' +
@@ -321,7 +330,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['series', 'metric', 'limit'],
           ['size_from', 'size_to'],
           ['rotation'],
@@ -335,14 +344,14 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['metrics'],
           ['groupby'],
         ],
       },
       {
         label: 'Chart Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['treemap_ratio'],
           ['number_format'],
         ],
@@ -376,7 +385,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['metric'],
           ['domain_granularity'],
           ['subdomain_granularity'],
@@ -390,14 +399,14 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['metrics'],
           ['groupby', 'limit'],
         ],
       },
       {
         label: 'Chart Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['whisker_options'],
         ],
       },
@@ -409,7 +418,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['series', 'entity'],
           ['x', 'y'],
           ['size', 'limit'],
@@ -417,7 +426,7 @@ const visTypes = {
       },
       {
         label: 'Chart Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['x_log_scale', 'y_log_scale'],
           ['show_legend'],
           ['max_bubble_size'],
@@ -433,7 +442,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['metric'],
           ['ranges', 'range_labels'],
           ['markers', 'marker_labels'],
@@ -448,7 +457,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['metric'],
           ['compare_lag'],
           ['compare_suffix'],
@@ -456,7 +465,7 @@ const visTypes = {
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       y_axis_format: {
         label: 'Number format',
       },
@@ -468,14 +477,14 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['metric'],
           ['subheader'],
           ['y_axis_format'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       y_axis_format: {
         label: 'Number format',
       },
@@ -487,19 +496,19 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['all_columns_x'],
           ['row_limit'],
         ],
       },
       {
         label: 'Histogram Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['link_length'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       all_columns_x: {
         label: 'Numeric Column',
         description: 'Select the numeric column to draw the histogram',
@@ -517,14 +526,14 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['groupby'],
           ['metric', 'secondary_metric'],
           ['row_limit'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       metric: {
         label: 'Primary Metric',
         description: 'The primary metric is used to define the arc segment sizes',
@@ -577,14 +586,14 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['groupby'],
           ['metric'],
           ['row_limit'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       groupby: {
         label: 'Source / Target',
         description: 'Choose a source and a target',
@@ -597,7 +606,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['groupby'],
           ['metric'],
           ['row_limit'],
@@ -605,13 +614,13 @@ const visTypes = {
       },
       {
         label: 'Force Layout',
-        fieldSetRows: [
+        controlSetRows: [
           ['link_length'],
           ['charge'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       groupby: {
         label: 'Source / Target',
         description: 'Choose a source and a target',
@@ -624,7 +633,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['entity'],
           ['country_fieldtype'],
           ['metric'],
@@ -632,16 +641,16 @@ const visTypes = {
       },
       {
         label: 'Bubbles',
-        fieldSetRows: [
+        controlSetRows: [
           ['show_bubbles'],
           ['secondary_metric'],
           ['max_bubble_size'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       entity: {
-        label: 'Country Field',
+        label: 'Country Control',
         description: '3 letter code of the country',
       },
       metric: {
@@ -660,17 +669,17 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
-          ['date_filter'],
+        controlSetRows: [
+          ['date_filter', 'instant_filtering'],
           ['groupby'],
           ['metric'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       groupby: {
-        label: 'Filter fields',
-        description: 'The fields you want to filter on',
+        label: 'Filter controls',
+        description: 'The controls you want to filter on',
         default: [],
       },
     },
@@ -681,7 +690,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['url'],
         ],
       },
@@ -693,7 +702,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['series'],
           ['metrics'],
           ['secondary_metric'],
@@ -709,7 +718,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: 'Axis & Metrics',
-        fieldSetRows: [
+        controlSetRows: [
           ['all_columns_x'],
           ['all_columns_y'],
           ['metric'],
@@ -717,7 +726,7 @@ const visTypes = {
       },
       {
         label: 'Heatmap Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['linear_color_scheme'],
           ['xscale_interval', 'yscale_interval'],
           ['canvas_image_rendering'],
@@ -733,7 +742,7 @@ const visTypes = {
       commonControlPanelSections.NVD3TimeSeries[0],
       {
         label: 'Chart Options',
-        fieldSetRows: [
+        controlSetRows: [
           ['series_height', 'horizon_color_scale'],
         ],
       },
@@ -745,7 +754,7 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['all_columns_x', 'all_columns_y'],
           ['clustering_radius'],
           ['row_limit'],
@@ -755,21 +764,21 @@ const visTypes = {
       },
       {
         label: 'Points',
-        fieldSetRows: [
+        controlSetRows: [
           ['point_radius'],
           ['point_radius_unit'],
         ],
       },
       {
         label: 'Labelling',
-        fieldSetRows: [
+        controlSetRows: [
           ['mapbox_label'],
           ['pandas_aggfunc'],
         ],
       },
       {
         label: 'Visual Tweaks',
-        fieldSetRows: [
+        controlSetRows: [
           ['mapbox_style'],
           ['global_opacity'],
           ['mapbox_color'],
@@ -777,14 +786,14 @@ const visTypes = {
       },
       {
         label: 'Viewport',
-        fieldSetRows: [
+        controlSetRows: [
           ['viewport_longitude'],
           ['viewport_latitude'],
           ['viewport_zoom'],
         ],
       },
     ],
-    fieldOverrides: {
+    controlOverrides: {
       all_columns_x: {
         label: 'Longitude',
         description: 'Column containing longitude data',
@@ -804,7 +813,7 @@ const visTypes = {
                      'describing the label',
       },
       groupby: {
-        description: 'One or many fields to group by. If grouping, latitude ' +
+        description: 'One or many controls to group by. If grouping, latitude ' +
                      'and longitude columns must be present.',
       },
     },

@@ -37,7 +37,9 @@ from flask_babel import lazy_gettext as _
 from pydruid.client import PyDruid
 from pydruid.utils.aggregators import count
 from pydruid.utils.filters import Dimension, Filter
-from pydruid.utils.postaggregator import Postaggregator
+from pydruid.utils.postaggregator import (
+    Postaggregator, Quantile, Quantiles, Field, Const, HyperUniqueCardinality,
+)
 from pydruid.utils.having import Aggregation
 from six import string_types
 
@@ -85,9 +87,6 @@ class QueryResult(object):
         self.duration = duration
         self.status = status
         self.error_message = error_message
-
-
-FilterPattern = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
 
 def set_perm(mapper, connection, target):  # noqa
@@ -777,14 +776,24 @@ class Database(Model, AuditMixinNullable):
         extra = self.get_extra()
         url = make_url(self.sqlalchemy_uri_decrypted)
         params = extra.get('engine_params', {})
-        if self.backend == 'presto' and schema:
-            if '/' in url.database:
-                url.database = url.database.split('/')[0] + '/' + schema
-            else:
-                url.database += '/' + schema
-        elif schema:
-            url.database = schema
+        url.database = self.get_database_for_various_backend(url, schema)
         return create_engine(url, **params)
+
+    def get_database_for_various_backend(self, uri, default_database=None):
+        database = uri.database
+        if self.backend == 'presto' and default_database:
+            if '/' in database:
+                database = database.split('/')[0] + '/' + default_database
+            else:
+                database += '/' + default_database
+        # Postgres and Redshift use the concept of schema as a logical entity
+        # on top of the database, so the database should not be changed
+        # even if passed default_database
+        elif self.backend == 'redshift' or self.backend == 'postgresql':
+            pass
+        elif default_database:
+            database = default_database
+        return database
 
     def get_reserved_words(self):
         return self.get_sqla_engine().dialect.preparer.reserved_words
@@ -821,20 +830,9 @@ class Database(Model, AuditMixinNullable):
             self, table_name, schema=None, limit=100, show_cols=False,
             indent=True):
         """Generates a ``select *`` statement in the proper dialect"""
-        quote = self.get_quoter()
-        fields = '*'
-        table = self.get_table(table_name, schema=schema)
-        if show_cols:
-            fields = [quote(c.name) for c in table.columns]
-        if schema:
-            table_name = schema + '.' + table_name
-        qry = select(fields).select_from(text(table_name))
-        if limit:
-            qry = qry.limit(limit)
-        sql = self.compile_sqla_query(qry)
-        if indent:
-            sql = sqlparse.format(sql, reindent=True)
-        return sql
+        return self.db_engine_spec.select_star(
+            self, table_name, schema=schema, limit=limit, show_cols=show_cols,
+            indent=indent)
 
     def wrap_sql_limit(self, sql, limit=1000):
         qry = (
@@ -852,15 +850,17 @@ class Database(Model, AuditMixinNullable):
         engine = self.get_sqla_engine()
         return sqla.inspect(engine)
 
-    def all_table_names(self, schema=None):
+    def all_table_names(self, schema=None, force=False):
         if not schema:
-            tables_dict = self.db_engine_spec.fetch_result_sets(self, 'table')
+            tables_dict = self.db_engine_spec.fetch_result_sets(
+                self, 'table', force=force)
             return tables_dict.get("", [])
         return sorted(self.inspector.get_table_names(schema))
 
-    def all_view_names(self, schema=None):
+    def all_view_names(self, schema=None, force=False):
         if not schema:
-            views_dict = self.db_engine_spec.fetch_result_sets(self, 'view')
+            views_dict = self.db_engine_spec.fetch_result_sets(
+                self, 'view', force=force)
             return views_dict.get("", [])
         views = []
         try:
@@ -1392,11 +1392,12 @@ class SqlaTable(Model, Datasource, AuditMixinNullable, ImportMixin):
                 continue
             col = flt['col']
             op = flt['op']
-            eq = ','.join(flt['val'])
-            col_obj = cols[col]
-            if op in ('in', 'not in'):
-                splitted = FilterPattern.split(eq)[1::2]
-                values = [types.strip("'").strip('"') for types in splitted]
+            eq = flt['val']
+            col_obj = cols.get(col)
+            if col_obj and op in ('in', 'not in'):
+                values = [types.strip("'").strip('"') for types in eq]
+                if col_obj.is_num:
+                    values = [utils.js_string_to_num(s) for s in values]
                 cond = col_obj.sqla_col.in_(values)
                 if op == 'not in':
                     cond = ~cond
@@ -1928,10 +1929,6 @@ class DruidDatasource(Model, AuditMixinNullable, Datasource, ImportMixin):
     )
 
     @property
-    def database(self):
-        return self.cluster
-
-    @property
     def metrics_combo(self):
         return sorted(
             [(m.metric_name, m.verbose_name) for m in self.metrics],
@@ -2360,9 +2357,30 @@ class DruidDatasource(Model, AuditMixinNullable, Datasource, ImportMixin):
                 all_metrics += conf.get('fieldNames', [])
                 if conf.get('type') == 'javascript':
                     post_aggs[metric_name] = JavascriptPostAggregator(
-                        name=conf.get('name'),
-                        field_names=conf.get('fieldNames'),
-                        function=conf.get('function'))
+                        name=conf.get('name', ''),
+                        field_names=conf.get('fieldNames', []),
+                        function=conf.get('function', ''))
+                elif conf.get('type') == 'quantile':
+                    post_aggs[metric_name] = Quantile(
+                        conf.get('name', ''),
+                        conf.get('probability', ''),
+                    )
+                elif conf.get('type') == 'quantiles':
+                    post_aggs[metric_name] = Quantiles(
+                        conf.get('name', ''),
+                        conf.get('probabilities', ''),
+                    )
+                elif conf.get('type') == 'fieldAccess':
+                    post_aggs[metric_name] = Field(conf.get('name'), '')
+                elif conf.get('type') == 'constant':
+                    post_aggs[metric_name] = Const(
+                        conf.get('value'),
+                        output_name=conf.get('name', '')
+                    )
+                elif conf.get('type') == 'hyperUniqueCardinality':
+                    post_aggs[metric_name] = HyperUniqueCardinality(
+                        conf.get('name'), ''
+                    )
                 else:
                     post_aggs[metric_name] = Postaggregator(
                         conf.get('fn', "/"),
@@ -2539,8 +2557,7 @@ class DruidDatasource(Model, AuditMixinNullable, Datasource, ImportMixin):
             query=query_str,
             duration=datetime.now() - qry_start_dttm)
 
-    @staticmethod
-    def get_filters(raw_filters):
+    def get_filters(self, raw_filters):
         filters = None
         for flt in raw_filters:
             if not all(f in flt for f in ['col', 'op', 'val']):
@@ -2549,22 +2566,27 @@ class DruidDatasource(Model, AuditMixinNullable, Datasource, ImportMixin):
             op = flt['op']
             eq = flt['val']
             cond = None
+            if op in ('in', 'not in'):
+                eq = [types.replace("'", '').strip() for types in eq]
+            elif not isinstance(flt['val'], basestring):
+                eq = eq[0] if len(eq) > 0 else ''
+            if col in self.num_cols:
+                if op in ('in', 'not in'):
+                    eq = [utils.js_string_to_num(v) for v in eq]
+                else:
+                    eq = utils.js_string_to_num(eq)
             if op == '==':
                 cond = Dimension(col) == eq
             elif op == '!=':
                 cond = ~(Dimension(col) == eq)
             elif op in ('in', 'not in'):
                 fields = []
-                # Distinguish quoted values with regular value types
-                split = FilterPattern.split(eq)[1::2]
-                values = [types.replace("'", '') for types in split]
-                if len(values) > 1:
-                    for s in values:
-                        s = s.strip()
+                if len(eq) > 1:
+                    for s in eq:
                         fields.append(Dimension(col) == s)
                     cond = Filter(type="or", fields=fields)
-                else:
-                    cond = Dimension(col) == eq
+                elif len(eq) == 1:
+                    cond = Dimension(col) == eq[0]
                 if op == 'not in':
                     cond = ~cond
             elif op == 'regex':
