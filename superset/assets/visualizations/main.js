@@ -24,6 +24,7 @@ const vizMap = {
   pie: require('./nvd3_vis.js'),
   pivot_table: require('./pivot_table.js'),
   sankey: require('./sankey.js'),
+  sankey_opvizor: require('./sankey_opvizor.js'),
   separator: require('./markup.js'),
   sunburst: require('./sunburst.js'),
   sunburst_opvizor: require('./sunburst_opvizor'),

@@ -303,7 +303,7 @@ export const controls = {
     description: 'One or many controls to pivot as columns',
   },
     single_column: {
-    type: 'SelectField',
+    type: 'SelectControl',
     multi: false,
     label: 'Column',
     mapStateToProps: (state) => ({
@@ -558,7 +558,7 @@ export const controls = {
   },
 
     treemap_Opvizor_ratio: {
-        type: 'TextField',
+        type: 'TextControl',
         label: 'Ratio',
         isFloat: true,
         default: 1,  // d3 default, golden ratio
@@ -824,6 +824,87 @@ export const controls = {
     description: 'Put your code here',
     default: '',
   },
+
+    label_primary: {
+    type: 'TextControl',
+    label: 'Label for primary metric',
+    description: 'Previous m1',
+    default: 'm1',
+    },
+    label_secondary: {
+    type: 'TextControl',
+    label: 'Label for secondary metric',
+    description: 'Previous m2',
+    default: 'm2',
+    },
+    main_label:{
+     type: 'TextControl',
+    label: 'Label for main stat',
+    description: 'Previous total',
+    default: 'total',
+    },
+    second_label:{
+     type: 'TextControl',
+    label: 'Label for secondary stat',
+    description: 'Previous parent',
+    default: 'parent',
+    },
+
+    sankey_pathvalue_label:{
+     type: 'TextControl',
+    label: 'Label styles for tooltip',
+    description: 'Controls the number formats, prefixes and suffixes of the labels',
+    default: '"Path Value:",{number1:.2f},"suffix_ex"; "prefix",{number2:.2s},"suffix";"prefix",{number3:.2s},"target prefix"',
+    },
+    sankey_location_clickevent: {
+    type: 'TextControl',
+    label: 'Link destination for click event',
+    description: 'Example: /superset/dashboard/issuedetails/ , to redirect to dashboard issuedetails',
+    default: '',
+    },
+    sankey_variable_export_filter: {
+    type: 'TextControl',
+    label: 'Variable filter name',
+    description: 'The variable name that will contain the value that comes from property "name" of the clicked object and that will be used to filter data in the linked dashboard.',
+    default: '',
+    },
+    location_1: {
+    type: 'TextControl',
+    label: 'Link destination for depth 1',
+    description: 'Example: /superset/dashboard/issuedetails/ , to redirect to dashboard issuedetails',
+    default: '',
+    },
+    location_2: {
+    type: 'TextControl',
+    label: 'Link destination for depth 2',
+    description: 'Example: /superset/dashboard/issuedetails/ , to redirect to dashboard issuedetails',
+    default: '',
+    },
+    location_3: {
+    type: 'TextControl',
+    label: 'Link destination for depth 3',
+    description: 'Example: /superset/dashboard/issuedetails/ , to redirect to dashboard issuedetails',
+    default: '',
+    },
+    variable_export_1: {
+    type: 'TextControl',
+    label: 'Variable name',
+    description: 'The variable name that will contain the value that comes from property "name" of the clicked object and that will be used to filter data in the linked dashboard.',
+    default: '',
+    },
+     variable_export_2: {
+    type: 'TextControl',
+    label: 'Variable name',
+    description: 'The variable name that will contain the value that comes from property "name" of the clicked object and that will be used to filter data in the linked dashboard.',
+    default: '',
+    },
+     variable_export_3: {
+    type: 'TextControl',
+    label: 'Variable name',
+    description: 'The variable name that will contain the value that comes from property "name" of the clicked object and that will be used to filter data in the linked dashboard.',
+    default: '',
+    },
+
 
   pandas_aggfunc: {
     type: 'SelectControl',
@@ -1131,6 +1212,8 @@ export const controls = {
     default: true,
     description: 'Points and clusters will update as viewport is being changed',
   },
+
+
 
   mapbox_color: {
     type: 'SelectControl',

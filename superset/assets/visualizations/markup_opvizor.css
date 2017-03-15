@@ -1,6 +1,6 @@
-.markup_opvizor {
+.markup_opvizor{
     padding: 10px;
-    overflow: auto;
+    overflow: auto !important;
 }
 .separator {
     background-color: transparent !important;

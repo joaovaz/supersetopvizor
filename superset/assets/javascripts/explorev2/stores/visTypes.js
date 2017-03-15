@@ -272,7 +272,7 @@ const visTypes = {
         label: null,
         controlSetRows: [
           ['markup_type'],
-          ['code'],
+          [],
         ],
       },
     ],
@@ -283,7 +283,7 @@ const visTypes = {
         controlPanelSections: [
             {
                 label: null,
-                fieldSetRows: [
+                controlSetRows: [
                     ['markup_type'],
                     ['single_column'],
                 ],
@@ -364,14 +364,14 @@ const visTypes = {
         controlPanelSections: [
             {
                 label: null,
-                fieldSetRows: [
+                controlSetRows: [
                     ['metrics'],
                     ['groupby'],
                 ],
             },
             {
                 label: 'Chart Options',
-                fieldSetRows: [
+                controlSetRows: [
                     ['treemap_Opvizor_ratio'],
                     ['number_format'],
                 ],
@@ -556,14 +556,28 @@ const visTypes = {
     controlPanelSections: [
       {
         label: null,
-        fieldSetRows: [
+        controlSetRows: [
           ['groupby'],
+            ['main_label','second_label'],
           ['metric', 'secondary_metric'],
+           ['label_primary','label_secondary'],
           ['row_limit'],
+            ['number_format'],
         ],
+
       },
+        {
+        label: 'Click Event',
+        controlSetRows: [
+            ['location_1', 'variable_export_1'],
+            ['location_2', 'variable_export_2'],
+            ['location_3', 'variable_export_3'],
+        ],
+
+      },
+
     ],
-    fieldOverrides: {
+    controlOverrides: {
       metric: {
         label: 'Primary Metric',
         description: 'The primary metric is used to define the arc segment sizes',
@@ -600,7 +614,38 @@ const visTypes = {
       },
     },
   },
+sankey_opvizor: {
+    label: 'Sankey by Opvizor',
+    controlPanelSections: [
+      {
+        label: null,
+        controlSetRows: [
+          ['groupby'],
+          ['metric'],
+          ['row_limit'],
+        ],
+      },
+        {
+        label: 'Labels',
+        controlSetRows: [
+          ['sankey_pathvalue_label'],
+        ],
+      },
+        {
+        label: 'Click Event',
+        controlSetRows: [
+            ['sankey_location_clickevent', 'sankey_variable_export_filter'],
+        ],
 
+      },
+    ],
+    controlOverrides: {
+      groupby: {
+        label: 'Source / Target',
+        description: 'Choose a source and a target',
+      },
+    },
+  },
   directed_force: {
     label: 'Directed Force Layout',
     controlPanelSections: [

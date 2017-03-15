@@ -20,6 +20,18 @@ function sunburstVis(slice, payload) {
   const visWidth = containerWidth - margin.left - margin.right;
   const visHeight = containerHeight - margin.top - margin.bottom - breadcrumbHeight;
   const radius = Math.min(visWidth, visHeight) / 2;
+  var primary_label = payload.form_data['label_primary'];
+  if (primary_label.length < 1){
+    primary_label = 'm1';}
+  var secondary_label = payload.form_data['label_secondary'];
+   if (secondary_label.length < 1){
+    secondary_label = 'm2';}
+  var main_label = payload.form_data['main_label'];
+   if (main_label.length < 1){
+    main_label = 'total';}
+  var second_label = payload.form_data['second_label'];
+    if (second_label.length < 1){
+    second_label = 'parent';}
 
   let colorByCategory = true; // color by category if primary/secondary metrics match
   let maxBreadcrumbs;
@@ -46,7 +58,7 @@ function sunburstVis(slice, payload) {
       return Math.sqrt(d.y + d.dy);
     });
 
-  const formatNum = d3.format('');
+  const formatNum = d3.format( slice.formData.number_format);
   const formatPerc = d3.format('.3p');
 
   container.select('svg').remove();
@@ -176,24 +188,24 @@ function sunburstVis(slice, payload) {
     gMiddleText.append('text')
       .attr('class', 'path-abs-percent')
       .attr('y', yOffsets[offsetIndex++])
-      .text(absolutePercString + ' of total');
+      .text(absolutePercString + ' of '+main_label);
 
     if (conditionalPercString) {
       gMiddleText.append('text')
         .attr('class', 'path-cond-percent')
         .attr('y', yOffsets[offsetIndex++])
-        .text(conditionalPercString + ' of parent');
+        .text(conditionalPercString + ' of '+second_label);
     }
 
     gMiddleText.append('text')
       .attr('class', 'path-metrics')
       .attr('y', yOffsets[offsetIndex++])
-      .text('analyses: ' + formatNum(d.m1) + (metricsMatch ? '' : ', m2: ' + formatNum(d.m2)));
+      .text(primary_label+': ' + formatNum(d.m1) + (metricsMatch ? '' : ', '+secondary_label+': ' + formatNum(d.m2)));
 
     gMiddleText.append('text')
       .attr('class', 'path-ratio')
       .attr('y', yOffsets[offsetIndex++])
-      .text((metricsMatch ? '' : ('m2/m1: ' + formatPerc(d.m2 / d.m1))));
+      .text((metricsMatch ? '' : (secondary_label+'/'+primary_label+': ' + formatPerc(d.m2 / d.m1))));
 
     // Reset and fade all the segments.
     arcs.selectAll('path')
@@ -380,11 +392,24 @@ function sunburstVis(slice, payload) {
       .on('mouseenter', mouseenter)
       .on('click', function (d) {
         //checking if its the outside ring
-            if(d.depth == 2) {
+           if(d.depth == 1 && payload.form_data['variable_export_1'].replace(/ /g,"").length >0 && payload.form_data['location_1'] .replace(/ /g,"").length >0) {
                 var par = {};
-                par.name = 'issuetitle';
+               // par.name = 'issuetitle';
+                par.name = payload.form_data['variable_export_1'];
                 par.value = d.name;
-                goToIssueDescription([par]);
+                redirect([par],payload.form_data['location_1']);
+            }
+            if(d.depth == 2 && payload.form_data['variable_export_2'].replace(/ /g,"").length >0 && payload.form_data['location_2'] .replace(/ /g,"").length >0) {
+                var par = {};
+               par.name = payload.form_data['variable_export_2'];
+                par.value = d.name;
+                redirect([par],payload.form_data['location_2']);
+            }
+            if(d.depth == 3 && payload.form_data['variable_export_3'].replace(/ /g,"").length >0 && payload.form_data['location_3'] .replace(/ /g,"").length >0) {
+                var par = {};
+                par.name = payload.form_data['variable_export_3'];
+                par.value = d.name;
+                redirect([par],payload.form_data['location_3']);
             }
         });
 
@@ -394,12 +419,12 @@ function sunburstVis(slice, payload) {
   createBreadcrumbs(payload);
   createVisualization(payload);
 
-  const goToIssueDescription = function (d) {
+  const redirect = function (d,l) {
 
         // console.log(d);
         var toEncode = JSON.stringify(makeJsonPreselectFilter(d));
         var encoded = encodeURIComponent(toEncode);
-        var link = document.location.origin + "/superset/dashboard/issuedetails/?preselect_filters="+encoded;
+        var link = document.location.origin + l+"?preselect_filters="+encoded;
         window.open(link);
     }
 

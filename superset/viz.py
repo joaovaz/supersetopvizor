@@ -1259,12 +1259,20 @@ class SunburstOpvizorViz(BaseViz):
     def get_data(self, df):
 
         # if m1 == m2 duplicate the metric column
+        m1 = 'm1'
+        m2 = 'm2'
+        tempm1 = self.form_data.get('label_primary')
+        tempm2 = self.form_data.get('label_secondary')
+        if len(tempm1) > 0:
+            m1 = tempm1
+        if len(tempm2) > 0:
+            m2 = tempm2
         cols = self.form_data.get('groupby')
         metric = self.form_data.get('metric')
         secondary_metric = self.form_data.get('secondary_metric')
         if metric == secondary_metric:
             ndf = df
-            ndf.columns = [cols + ['m1', 'm2']]
+            ndf.columns = [cols + [m1, m2]]
         else:
             cols += [
                 self.form_data['metric'], self.form_data['secondary_metric']]
@@ -1272,6 +1280,7 @@ class SunburstOpvizorViz(BaseViz):
         return json.loads(ndf.to_json(orient="values"))  # TODO fix this nonsense
 
     def query_obj(self):
+       # print(self.form_data)
         qry = super(SunburstOpvizorViz, self).query_obj()
         qry['metrics'] = [
             self.form_data['metric'], self.form_data['secondary_metric']]
@@ -1289,6 +1298,54 @@ class SankeyViz(BaseViz):
 
     def query_obj(self):
         qry = super(SankeyViz, self).query_obj()
+        if len(qry['groupby']) != 2:
+            raise Exception("Pick exactly 2 columns as [Source / Target]")
+        qry['metrics'] = [
+            self.form_data['metric']]
+        return qry
+
+    def get_data(self, df):
+        df.columns = ['source', 'target', 'value']
+        recs = df.to_dict(orient='records')
+
+        hierarchy = defaultdict(set)
+        for row in recs:
+            hierarchy[row['source']].add(row['target'])
+
+        def find_cycle(g):
+            """Whether there's a cycle in a directed graph"""
+            path = set()
+
+            def visit(vertex):
+                path.add(vertex)
+                for neighbour in g.get(vertex, ()):
+                    if neighbour in path or visit(neighbour):
+                        return (vertex, neighbour)
+                path.remove(vertex)
+
+            for v in g:
+                cycle = visit(v)
+                if cycle:
+                    return cycle
+
+        cycle = find_cycle(hierarchy)
+        if cycle:
+            raise Exception(
+                "There's a loop in your Sankey, please provide a tree. "
+                "Here's a faulty link: {}".format(cycle))
+        return recs
+
+class SankeyOpvizorViz(BaseViz):
+
+    """A Sankey diagram that requires a parent-child dataset"""
+
+    viz_type = "sankey_opvizor"
+    verbose_name = _("Sankey by Opvizor")
+    is_timeseries = False
+    credits = '<a href="https://www.npmjs.com/package/d3-sankey">d3-sankey on npm</a>'
+
+    def query_obj(self):
+        qry = super(SankeyOpvizorViz, self).query_obj()
         if len(qry['groupby']) != 2:
             raise Exception("Pick exactly 2 columns as [Source / Target]")
         qry['metrics'] = [
@@ -1660,6 +1717,7 @@ viz_types_list = [
     SunburstOpvizorViz,
     DirectedForceViz,
     SankeyViz,
+    SankeyOpvizorViz,
     WorldMapViz,
     FilterBoxViz,
     IFrameViz,
